@@ -135,15 +135,11 @@ we opted for sticking with Datadog-style propagation over `B3`. This is set via 
 The Python library takes care of propagation of the trace context automatically.
 Unfortunately, we need to do this manually in Rust.
 
-In Rust, `reqwest` is the most commonly used HTTP client crate. We provide a 
-`reqwest` middleware that injects the necessary headers using the Datadog native
-propagation standard (common alternatives would be Jaeger and B3, more on this:
-https://opentelemetry.io/docs/reference/specification/context/api-propagators/#propagators-distribution).
-
+Arguably, propagation in HTTP requests is the most common need.
 This crate does not provide any additional support, but we recommend using
 the [reqwest-middleware](https://crates.io/crates/reqwest-middleware) crate
-to inject the necessary headers. If you set the global propagator using
-`ddtrace`, it will work out of the box.
+to inject the necessary headers when using `reqwest`.
+If you set the global propagator using `ddtrace`, it will work out of the box.
 
 ```rust
 use ddtrace::set_global_propagator;
