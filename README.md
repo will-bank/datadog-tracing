@@ -14,7 +14,7 @@ and Datadog.
 `ddtrace` has the following features:
 1. tracing: utilities for building an OpenTelemetry tracer/layer that sends traces to the Datadog agent
 2. log correlation: a log formatter that converts the trace ID and span ID to the Datadog native format and injects them into the `dd.trace_id` and `dd.span_id` fields
-   (more information: https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/opentelemetry/)
+   ([more information](https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/opentelemetry/))
 3. propagation: a utility function to set the Datadog propagator as the global propagator
 4. axum (enabled via the `axum` feature): re-exposing the functionality of [axum-tracing-opentelemetry](https://github.com/davidB/axum-tracing-opentelemetry)
 
@@ -92,6 +92,9 @@ async fn health() -> &'static str {
     "healthy"
 }
 ```
+
+Please refer to the complete project with the `Cargo.toml`
+[here](https://github.com/Validus-Risk-Management/ddtrace/tree/main/examples/axum).
 
 # Datadog Agent Setup
 
