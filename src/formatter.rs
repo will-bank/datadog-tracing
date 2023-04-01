@@ -1,3 +1,10 @@
+//! An event formatter to emit events in a way that Datadog can correlate them with traces.
+//!
+//! Datadog's trace ID and span ID format is different from the OpenTelemetry standard.
+//! Using this formatter, the trace ID is converted to the correct format.
+//! It also adds the trace ID to the `dd.trace_id` field and the span ID to the
+//! `dd.span_id` field, which is where Datadog looks for these by default
+//! (although the path to the trace ID can be overridden in Datadog).
 use std::io;
 
 use chrono::Utc;
@@ -11,9 +18,9 @@ use tracing_subscriber::fmt::format::Writer;
 use tracing_subscriber::fmt::{FmtContext, FormatEvent, FormatFields};
 use tracing_subscriber::registry::{LookupSpan, SpanRef};
 
-pub struct TraceInfo {
-    pub trace_id: String,
-    pub span_id: String,
+struct TraceInfo {
+    trace_id: String,
+    span_id: String,
 }
 
 fn convert_trace_id(id: TraceId) -> String {
@@ -24,14 +31,14 @@ fn convert_trace_id(id: TraceId) -> String {
 }
 
 fn convert_span_id(id: SpanId) -> String {
-    let dd_id = u64::from_be_bytes(id.to_bytes().try_into().unwrap());
+    let dd_id = u64::from_be_bytes(id.to_bytes());
 
     dd_id.to_string()
 }
 
 fn lookup_trace_info<S>(span_ref: &SpanRef<S>) -> Option<TraceInfo>
-    where
-        S: Subscriber + for<'a> LookupSpan<'a>,
+where
+    S: Subscriber + for<'a> LookupSpan<'a>,
 {
     span_ref.extensions().get::<OtelData>().map(|o| TraceInfo {
         trace_id: convert_trace_id(o.parent_cx.span().span_context().trace_id()),
@@ -40,12 +47,12 @@ fn lookup_trace_info<S>(span_ref: &SpanRef<S>) -> Option<TraceInfo>
 }
 
 // mostly stolen from here: https://github.com/tokio-rs/tracing/issues/1531
-pub struct TraceIdFormat;
+pub struct DatadogFormatter;
 
-impl<S, N> FormatEvent<S, N> for TraceIdFormat
-    where
-        S: Subscriber + for<'lookup> LookupSpan<'lookup>,
-        N: for<'writer> FormatFields<'writer> + 'static,
+impl<S, N> FormatEvent<S, N> for DatadogFormatter
+where
+    S: Subscriber + for<'lookup> LookupSpan<'lookup>,
+    N: for<'writer> FormatFields<'writer> + 'static,
 {
     fn format_event(
         &self,
@@ -53,8 +60,8 @@ impl<S, N> FormatEvent<S, N> for TraceIdFormat
         mut writer: Writer<'_>,
         event: &Event<'_>,
     ) -> std::fmt::Result
-        where
-            S: Subscriber + for<'a> LookupSpan<'a>,
+    where
+        S: Subscriber + for<'a> LookupSpan<'a>,
     {
         let meta = event.metadata();
 
@@ -81,12 +88,12 @@ impl<S, N> FormatEvent<S, N> for TraceIdFormat
     }
 }
 
-pub struct WriteAdaptor<'a> {
+struct WriteAdaptor<'a> {
     fmt_write: &'a mut dyn std::fmt::Write,
 }
 
 impl<'a> WriteAdaptor<'a> {
-    pub fn new(fmt_write: &'a mut dyn std::fmt::Write) -> Self {
+    fn new(fmt_write: &'a mut dyn std::fmt::Write) -> Self {
         Self { fmt_write }
     }
 }

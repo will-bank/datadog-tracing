@@ -1,6 +1,6 @@
 [package]
 name = "ddtrace"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["David Steiner <david_j_steiner@yahoo.co.nz", "Fergus Strangways-Dixon <fergusdixon101@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -9,6 +9,7 @@ readme = "README.md"
 
 [features]
 axum = ["dep:axum", "dep:axum-tracing-opentelemetry"]
+reqwest = ["dep:reqwest"]
 
 [dependencies]
 axum = { version = "^0.6.10", optional = true }
@@ -17,6 +18,7 @@ chrono = "^0.4.24"
 opentelemetry = { version = "^0.18.0", features = ["rt-tokio"] }
 opentelemetry-datadog = "^0.6.0"
 opentelemetry-otlp = { version = "^0.11.0" }
+reqwest = { version = "^0.11.16", optional = true }
 serde = { version = "^1.0.156", features = ["derive"] }
 serde_json = "^1.0.95"
 tracing = "^0.1.37"

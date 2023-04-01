@@ -1,9 +1,15 @@
-use std::time::Duration;
-use opentelemetry::KeyValue;
-use opentelemetry::trace::{TraceResult};
-use opentelemetry::sdk::{Resource, trace};
+//! Trace and layer builders to export traces to the Datadog agent.
+//!
+//! This module contains a function that builds a tracer with an exporter
+//! to send traces to the Datadog agent in batches over gRPC.
+//!
+//! It also contains a convenience function to build a layer with the tracer.
 use opentelemetry::sdk::trace::{RandomIdGenerator, Sampler, Tracer};
+use opentelemetry::sdk::{trace, Resource};
+pub use opentelemetry::trace::{TraceError, TraceResult};
+use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig;
+use std::time::Duration;
 use tracing::Subscriber;
 use tracing_opentelemetry::{OpenTelemetryLayer, PreSampledTracer};
 use tracing_subscriber::registry::LookupSpan;

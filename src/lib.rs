@@ -1,11 +1,15 @@
-mod formatter;
-mod propagator;
-mod tracer;
-
-pub use formatter::TraceIdFormat;
-pub use propagator::set_global_propagator;
-pub use tracer::{build_tracer, build_layer};
-pub use opentelemetry::trace::{TraceError, TraceResult};
+//! Utilities to integrate Rust services with Datadog using [`opentelemetry`],
+//! [`tracing`], and other open source libraries.
+//!
+//! This is an opinionated crate providing the building blocks for a setup that
+//! works with Datadog. It has been tested with services using [`axum`] hosted
+//! on AWS ECS, with propagation working when requests are made to other services
+//! using [`reqwest`].
 
 #[cfg(feature = "axum")]
-pub use axum_tracing_opentelemetry::opentelemetry_tracing_layer;
+pub mod axum;
+pub mod formatter;
+mod propagator;
+pub mod tracer;
+
+pub use propagator::set_global_propagator;
