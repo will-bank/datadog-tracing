@@ -6,6 +6,9 @@ edition = "2021"
 license = "MIT"
 description = "utilities for integrating Datadog with tracing"
 readme = "README.md"
+keywords = ["datadog", "tracing", "opentelemetry", "axum"]
+categories = ["web-programming"]
+exclude = [".pre-commit-config.yaml"]
 
 [features]
 axum = ["dep:axum", "dep:tokio", "dep:axum-tracing-opentelemetry"]
