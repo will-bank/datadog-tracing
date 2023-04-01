@@ -5,6 +5,9 @@
 //! works with Datadog. It has been tested with services using [`axum`] hosted
 //! on AWS ECS, with propagation working when requests are made to other services
 //! using [`reqwest`].
+//!
+//! [`axum`]: https://github.com/tokio-rs/axum
+//! [`reqwest`]: https://docs.rs/reqwest/latest/reqwest/
 
 #[cfg(feature = "axum")]
 pub mod axum;
