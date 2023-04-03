@@ -1,0 +1,41 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Cargo.toml"
+      - ".github/workflows/release.yml"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install protobuf
+        uses: taiki-e/install-action@v2
+        with:
+          tool: protoc
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: get version
+        run: echo PACKAGE_VERSION=$(sed -nE 's/^\s*version = "(.*?)"/\1/p' Cargo.toml) >> $GITHUB_ENV
+      - name: check published version
+        run: echo PUBLISHED_VERSION=$(cargo search kcl --limit 1 | sed -nE 's/^[^"]*"//; s/".*//1p' -) >> $GITHUB_ENV
+      - name: cargo login
+        if: env.PACKAGE_VERSION != env.PUBLISHED_VERSION
+        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
+      - name: cargo package
+        if: env.PACKAGE_VERSION != env.PUBLISHED_VERSION
+        run: |
+          cargo package
+          echo "We will publish:" $PACKAGE_VERSION
+          echo "This is current latest:" $PUBLISHED_VERSION
+      - name: Publish KCL
+        if: env.PACKAGE_VERSION != env.PUBLISHED_VERSION
+        run: |
+          echo "# Cargo Publish"
+          cargo publish --no-verify
