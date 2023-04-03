@@ -21,9 +21,9 @@ jobs:
           tool: protoc
       - name: Checkout
         uses: actions/checkout@v2
-      - name: get version
+      - name: Get version
         run: echo PACKAGE_VERSION=$(sed -nE 's/^\s*version = "(.*?)"/\1/p' Cargo.toml) >> $GITHUB_ENV
-      - name: check published version
+      - name: Check published version
         run: echo PUBLISHED_VERSION=$(cargo search kcl --limit 1 | sed -nE 's/^[^"]*"//; s/".*//1p' -) >> $GITHUB_ENV
       - name: cargo login
         if: env.PACKAGE_VERSION != env.PUBLISHED_VERSION
@@ -34,7 +34,7 @@ jobs:
           cargo package
           echo "We will publish:" $PACKAGE_VERSION
           echo "This is current latest:" $PUBLISHED_VERSION
-      - name: Publish KCL
+      - name: Publish
         if: env.PACKAGE_VERSION != env.PUBLISHED_VERSION
         run: |
           echo "# Cargo Publish"

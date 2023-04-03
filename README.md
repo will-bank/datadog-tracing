@@ -1,3 +1,7 @@
+[![crates-badge]](https://crates.io/crates/ddtrace)
+[![docs-badge]](https://docs.rs/ddtrace)
+[![Crates.io](https://img.shields.io/crates/l/ddtrace)](LICENSE)
+
 Datadog tracing and log correlation for Rust services.
 
 Datadog has official support for Python, which includes various SDKs and
@@ -160,3 +164,6 @@ fn get_http_client() -> ClientWithMiddleware {
         .build()
 }
 ```
+
+[crates-badge]: https://img.shields.io/crates/v/ddtrace.svg
+[docs-badge]: https://docs.rs/ddtrace/badge.svg
