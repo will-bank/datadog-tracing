@@ -10,6 +10,7 @@ use std::io;
 use chrono::Utc;
 use opentelemetry::trace::{SpanId, TraceContextExt, TraceId};
 use serde::ser::{SerializeMap, Serializer as _};
+use serde::Serialize;
 use tracing::{Event, Subscriber};
 use tracing_opentelemetry::OtelData;
 use tracing_serde::fields::AsMap;
@@ -18,22 +19,25 @@ use tracing_subscriber::fmt::format::Writer;
 use tracing_subscriber::fmt::{FmtContext, FormatEvent, FormatFields};
 use tracing_subscriber::registry::{LookupSpan, SpanRef};
 
+#[derive(Serialize)]
+struct DatadogId(u64);
+
 struct TraceInfo {
-    trace_id: String,
-    span_id: String,
+    trace_id: DatadogId,
+    span_id: DatadogId,
 }
 
-fn convert_trace_id(id: TraceId) -> String {
-    let bytes = &id.to_bytes()[std::mem::size_of::<u64>()..std::mem::size_of::<u128>()];
-    let dd_id = u64::from_be_bytes(bytes.try_into().unwrap());
-
-    dd_id.to_string()
+impl From<TraceId> for DatadogId {
+    fn from(value: TraceId) -> Self {
+        let bytes = &value.to_bytes()[std::mem::size_of::<u64>()..std::mem::size_of::<u128>()];
+        Self(u64::from_be_bytes(bytes.try_into().unwrap()))
+    }
 }
 
-fn convert_span_id(id: SpanId) -> String {
-    let dd_id = u64::from_be_bytes(id.to_bytes());
-
-    dd_id.to_string()
+impl From<SpanId> for DatadogId {
+    fn from(value: SpanId) -> Self {
+        Self(u64::from_be_bytes(value.to_bytes()))
+    }
 }
 
 fn lookup_trace_info<S>(span_ref: &SpanRef<S>) -> Option<TraceInfo>
@@ -41,8 +45,8 @@ where
     S: Subscriber + for<'a> LookupSpan<'a>,
 {
     span_ref.extensions().get::<OtelData>().map(|o| TraceInfo {
-        trace_id: convert_trace_id(o.parent_cx.span().span_context().trace_id()),
-        span_id: convert_span_id(o.builder.span_id.unwrap_or(SpanId::INVALID)),
+        trace_id: o.parent_cx.span().span_context().trace_id().into(),
+        span_id: o.builder.span_id.unwrap_or(SpanId::INVALID).into(),
     })
 }
 
@@ -112,5 +116,27 @@ impl<'a> io::Write for WriteAdaptor<'a> {
 
     fn flush(&mut self) -> io::Result<()> {
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::formatter::DatadogId;
+    use opentelemetry::trace::{SpanId, TraceId};
+
+    #[test]
+    fn test_trace_id_converted_to_datadog_id() {
+        let trace_id = TraceId::from_hex("2de7888d8f42abc9c7ba048b78f7a9fb").unwrap();
+        let datadog_id: DatadogId = trace_id.into();
+
+        assert_eq!(datadog_id.0, 14391820556292303355);
+    }
+
+    #[test]
+    fn test_span_id_converted_to_datadog_id() {
+        let span_id = SpanId::from_hex("58406520a0066491").unwrap();
+        let datadog_id: DatadogId = span_id.into();
+
+        assert_eq!(datadog_id.0, 6359193864645272721);
     }
 }

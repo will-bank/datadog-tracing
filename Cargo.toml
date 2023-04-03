@@ -1,6 +1,6 @@
 [package]
 name = "ddtrace"
-version = "0.0.5"
+version = "0.0.6"
 authors = ["David Steiner <david_j_steiner@yahoo.co.nz", "Fergus Strangways-Dixon <fergusdixon101@gmail.com>"]
 edition = "2021"
 license = "MIT"
