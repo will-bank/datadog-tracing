@@ -16,5 +16,5 @@ pub mod tracer;
 pub mod init;
 pub mod shutdown;
 
-pub use init::init_registry;
+pub use init::init;
 pub use opentelemetry::global::shutdown_tracer_provider;

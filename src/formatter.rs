@@ -5,6 +5,7 @@
 //! It also adds the trace ID to the `dd.trace_id` field and the span ID to the
 //! `dd.span_id` field, which is where Datadog looks for these by default
 //! (although the path to the trace ID can be overridden in Datadog).
+
 use std::io;
 
 use chrono::Utc;
@@ -13,7 +14,7 @@ use serde::ser::{SerializeMap, Serializer as _};
 use serde::Serialize;
 use tracing::{Event, Subscriber};
 use tracing_opentelemetry::OtelData;
-use tracing_serde::fields::AsMap;
+
 use tracing_serde::AsSerde;
 use tracing_subscriber::fmt::format::Writer;
 use tracing_subscriber::fmt::{FmtContext, FormatEvent, FormatFields};
@@ -30,7 +31,7 @@ struct TraceInfo {
 impl From<TraceId> for DatadogId {
     fn from(value: TraceId) -> Self {
         let bytes = &value.to_bytes()[std::mem::size_of::<u64>()..std::mem::size_of::<u128>()];
-        Self(u64::from_be_bytes(bytes.try_into().unwrap()))
+        Self(u64::from_be_bytes(bytes.try_into().unwrap_or_default()))
     }
 }
 
@@ -41,8 +42,8 @@ impl From<SpanId> for DatadogId {
 }
 
 fn lookup_trace_info<S>(span_ref: &SpanRef<S>) -> Option<TraceInfo>
-where
-    S: Subscriber + for<'a> LookupSpan<'a>,
+    where
+        S: Subscriber + for<'a> LookupSpan<'a>,
 {
     span_ref.extensions().get::<OtelData>().map(|o| TraceInfo {
         trace_id: o.parent_cx.span().span_context().trace_id().into(),
@@ -54,9 +55,9 @@ where
 pub struct DatadogFormatter;
 
 impl<S, N> FormatEvent<S, N> for DatadogFormatter
-where
-    S: Subscriber + for<'lookup> LookupSpan<'lookup>,
-    N: for<'writer> FormatFields<'writer> + 'static,
+    where
+        S: Subscriber + for<'lookup> LookupSpan<'lookup>,
+        N: for<'writer> FormatFields<'writer> + 'static,
 {
     fn format_event(
         &self,
@@ -64,8 +65,8 @@ where
         mut writer: Writer<'_>,
         event: &Event<'_>,
     ) -> std::fmt::Result
-    where
-        S: Subscriber + for<'a> LookupSpan<'a>,
+        where
+            S: Subscriber + for<'a> LookupSpan<'a>,
     {
         let meta = event.metadata();
 
@@ -74,8 +75,12 @@ where
             let mut serializer = serializer.serialize_map(None)?;
             serializer.serialize_entry("timestamp", &Utc::now().to_rfc3339())?;
             serializer.serialize_entry("level", &meta.level().as_serde())?;
-            serializer.serialize_entry("fields", &event.field_map())?;
             serializer.serialize_entry("target", meta.target())?;
+
+            // fields -> stolen from https://github.com/tokio-rs/tracing/blob/tracing-subscriber-0.3.17/tracing-subscriber/src/fmt/format/json.rs#L263-L268
+            let mut visitor = tracing_serde::SerdeMapVisitor::new(serializer);
+            event.record(&mut visitor);
+            serializer = visitor.take_serializer()?;
 
             if let Some(ref span_ref) = ctx.lookup_current() {
                 if let Some(trace_info) = lookup_trace_info(span_ref) {
@@ -121,7 +126,7 @@ impl<'a> io::Write for WriteAdaptor<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::formatter::DatadogId;
+    use super::DatadogId;
     use opentelemetry::trace::{SpanId, TraceId};
 
     #[test]
@@ -130,6 +135,14 @@ mod tests {
         let datadog_id: DatadogId = trace_id.into();
 
         assert_eq!(datadog_id.0, 14391820556292303355);
+    }
+
+    #[test]
+    fn test_invalid_trace_id_converted_to_zero() {
+        let trace_id = TraceId::INVALID;
+        let datadog_id: DatadogId = trace_id.into();
+
+        assert_eq!(datadog_id.0, 0);
     }
 
     #[test]

@@ -1,13 +1,18 @@
 [package]
-name = "ddtrace"
-version = "0.0.7"
-authors = ["David Steiner <david_j_steiner@yahoo.co.nz", "Fergus Strangways-Dixon <fergusdixon101@gmail.com>"]
+name = "datadog_tracing"
+version = "0.0.1"
+authors = [
+    "David Steiner <david_j_steiner@yahoo.co.nz",
+    "Fergus Strangways-Dixon <fergusdixon101@gmail.com>",
+    "Fernando Goncalves <fernando.hsgoncalves@gmail.com>",
+    "Alefh Silva <alefh.sousa@gmail.com>"
+]
 edition = "2021"
 license = "MIT"
 description = "utilities for integrating Datadog with tracing"
 readme = "README.md"
-homepage = "https://github.com/Validus-Risk-Management/ddtrace"
-repository = "https://github.com/Validus-Risk-Management/ddtrace"
+homepage = "https://github.com/will-bank/datadog_tracing"
+repository = "https://github.com/will-bank/datadog_tracing"
 keywords = ["datadog", "tracing", "opentelemetry", "axum"]
 categories = ["web-programming"]
 exclude = [".pre-commit-config.yaml"]

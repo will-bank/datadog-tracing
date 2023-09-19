@@ -17,8 +17,14 @@ use tracing_opentelemetry::{OpenTelemetryLayer, PreSampledTracer};
 use tracing_subscriber::registry::LookupSpan;
 
 pub fn build_tracer() -> TraceResult<Tracer> {
-    let service_name = env::var("DD_SERVICE").expect("missing DD_SERVICE");
+    let service_name = env::var("DD_SERVICE")
+        .map_err(|_| <&str as Into<TraceError>>::into("missing DD_SERVICE"))?;
+
+
     let dd_host = env::var("DD_AGENT_HOST").unwrap_or("localhost".to_string());
+    let dd_port = env::var("DD_AGENT_PORT").ok()
+        .and_then(|it| it.parse::<i32>().ok())
+        .unwrap_or(8126);
 
     // disabling connection reuse with dd-agent to avoid "connection closed from server" errors
     let dd_http_client = reqwest::ClientBuilder::new()
@@ -30,7 +36,7 @@ pub fn build_tracer() -> TraceResult<Tracer> {
         .with_http_client::<reqwest::Client>(Arc::new(dd_http_client))
         .with_service_name(service_name)
         .with_version(ApiVersion::Version05)
-        .with_agent_endpoint(format!("http://{dd_host}:8126"))
+        .with_agent_endpoint(format!("http://{dd_host}:{dd_port}"))
         .with_trace_config(
             trace::config()
                 .with_sampler(Sampler::AlwaysOn)

@@ -2,11 +2,11 @@ use std::net::SocketAddr;
 use std::time::Duration;
 
 use axum::{routing::get, Router};
-use ddtrace::axum::opentelemetry_tracing_layer;
+use datadog_tracing::axum::opentelemetry_tracing_layer;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let (guard, tracer_shutdown) = ddtrace::init()?;
+    let (_guard, tracer_shutdown) = datadog_tracing::init()?;
 
     let app = Router::new()
         .route("/", get(root))
@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
-        .with_graceful_shutdown(ddtrace::axum::shutdown_signal(tracer_shutdown))
+        .with_graceful_shutdown(datadog_tracing::shutdown::handle_signal(tracer_shutdown))
         .await
         .unwrap();
 

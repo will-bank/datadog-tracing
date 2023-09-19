@@ -1,19 +1,12 @@
 use std::env;
-use std::sync::Arc;
-use std::time::Duration;
 use tracing::Subscriber;
 use tracing_subscriber::registry::LookupSpan;
 use tracing_subscriber::{EnvFilter, Layer, Registry};
-
-use opentelemetry::global;
-use opentelemetry::global::shutdown_tracer_provider;
-use opentelemetry::sdk::trace;
-use opentelemetry::sdk::trace::{RandomIdGenerator, Sampler};
-use opentelemetry_datadog::{ApiVersion, DatadogPropagator};
 use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use crate::formatter::DatadogFormatter;
+use crate::shutdown::TracerShutdown;
 use crate::tracer::{build_tracer, TraceError};
 
 fn loglevel_filter_layer(dd_enabled: bool) -> EnvFilter {
@@ -23,7 +16,7 @@ fn loglevel_filter_layer(dd_enabled: bool) -> EnvFilter {
     let axum_tracing_log_level = env::var("AXUM_TRACING_LOG_LEVEL").unwrap_or_else(|_| if dd_enabled { "info".to_string() } else { "off".to_string() });
 
     // `otel::setup` set to debug to log detected resources, configuration read and infered
-    let otel_log_level = env::var("OTEL_LOG_LEVEL").unwrap_or_else(|_| "debug".to_string());;
+    let otel_log_level = env::var("OTEL_LOG_LEVEL").unwrap_or_else(|_| "debug".to_string());
 
     env::set_var(
         "RUST_LOG",
@@ -49,8 +42,7 @@ fn log_layer<S>(dd_enabled: bool, non_blocking: NonBlocking) -> Box<dyn Layer<S>
     }
 }
 
-pub fn init<F>() -> Result<(WorkerGuard, F), TraceError>
-    where F: Fn(()) -> () {
+pub fn init() -> Result<(WorkerGuard, TracerShutdown), TraceError> {
 
     let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
 
@@ -69,7 +61,5 @@ pub fn init<F>() -> Result<(WorkerGuard, F), TraceError>
         .with(telemetry_layer)
         .init();
 
-    let tracer_shutdown = || shutdown_tracer_provider();
-
-    Ok((guard, tracer_shutdown))
+    Ok((guard, TracerShutdown{}))
 }

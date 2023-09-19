@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 axum = "^0.6.12"
-ddtrace = { path = "../..", features = ["axum"] }
+datadog_tracing = { path = "../..", features = ["axum"] }
 tokio = { version = "^1.26.0", features = ["macros", "rt-multi-thread"] }
 tracing = "^0.1.37"
-tracing-subscriber = { version = "^0.3.16", features = ["env-filter", "json"] }
