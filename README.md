@@ -14,6 +14,8 @@ This crate contains the necessary glue to bridge the gap between OpenTelemetry a
    ([more information](https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/opentelemetry/))
 3. propagation: a utility function to set the Datadog propagator as the global propagator
 4. axum (enabled via the `axum` feature): re-exposing the functionality of [axum-tracing-opentelemetry](https://github.com/davidB/axum-tracing-opentelemetry)
+5. opionated tracing-subscriber init function, configuring logs and the datadog exporter. It's optional, and you can build your own: the functions it uses are exposed. 
+
 
 # Configuration
 
@@ -56,7 +58,7 @@ For example, the Python `datadog_tracing` library supports `B3` but it
 
 For ease of integration with services written in other languages that use the official Datadog SDK,
 we opted for sticking with Datadog-style propagation over `B3`. This is set via the
-`set_global_propagator` function.
+`set_global_propagator` function which is automatically called when you create the tracer.
 
 
 # Reqwest Propagation
