@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
-        .with_graceful_shutdown(datadog_tracing::shutdown::handle_signal(tracer_shutdown))
+        .with_graceful_shutdown(datadog_tracing::axum::shutdown_signal(tracer_shutdown))
         .await
         .unwrap();
 
