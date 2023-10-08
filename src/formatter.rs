@@ -12,7 +12,7 @@ use chrono::Utc;
 use opentelemetry::trace::{SpanId, TraceContextExt, TraceId};
 use serde::ser::{SerializeMap, Serializer as _};
 use serde::Serialize;
-use tracing::{Event, Instrument, Subscriber};
+use tracing::{Event, Subscriber};
 use tracing_opentelemetry::OtelData;
 
 use tracing_serde::AsSerde;

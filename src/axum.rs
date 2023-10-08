@@ -5,9 +5,13 @@
 //!
 //! [`axum-tracing-opentelemetry`]: https://github.com/davidB/axum-tracing-opentelemetry
 
-pub use axum_tracing_opentelemetry::opentelemetry_tracing_layer;
+use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use crate::shutdown::TracerShutdown;
 use tokio::signal;
+
+pub fn opentelemetry_tracing_layer() -> OtelAxumLayer {
+    OtelAxumLayer::default()
+}
 
 pub async fn shutdown_signal(tracer_shutdown: TracerShutdown) {
     let ctrl_c = async {
