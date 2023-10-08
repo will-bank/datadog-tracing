@@ -1,6 +1,6 @@
 [package]
 name = "datadog-tracing"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
     "Fernando Goncalves <fernando.hsgoncalves@gmail.com>",
     "Alefh Sousa <alefh.sousa@gmail.com>"
@@ -19,8 +19,8 @@ exclude = [".pre-commit-config.yaml"]
 axum = ["dep:axum", "dep:tokio", "dep:axum-tracing-opentelemetry"]
 
 [dependencies]
-axum = { version = "^0.6.10", optional = true}
-axum-tracing-opentelemetry = { version = "^0.14.1", optional = true}
+axum = { version = "^0.6.10", optional = true }
+axum-tracing-opentelemetry = { version = "^0.14.1", optional = true }
 chrono = "^0.4.24"
 opentelemetry = { version = "^0.20.0", features = ["rt-tokio"] }
 opentelemetry-http = { version = "^0.9.0" }

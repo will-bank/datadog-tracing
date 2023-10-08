@@ -10,8 +10,9 @@ use opentelemetry::sdk::trace::{RandomIdGenerator, Sampler, Tracer};
 use opentelemetry::sdk::trace;
 use opentelemetry::global;
 use std::time::Duration;
+use opentelemetry::sdk::propagation::TraceContextPropagator;
 use opentelemetry::trace::{TraceError, TraceResult};
-use opentelemetry_datadog::{ApiVersion, DatadogPropagator};
+use opentelemetry_datadog::ApiVersion;
 use tracing::Subscriber;
 use tracing_opentelemetry::{OpenTelemetryLayer, PreSampledTracer};
 use tracing_subscriber::registry::LookupSpan;
@@ -44,7 +45,7 @@ pub fn build_tracer() -> TraceResult<Tracer> {
         )
         .install_batch(opentelemetry::runtime::Tokio);
 
-    global::set_text_map_propagator(DatadogPropagator::default());
+    global::set_text_map_propagator(TraceContextPropagator::default());
 
     tracer
 }
