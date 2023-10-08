@@ -21,15 +21,15 @@ This crate contains the necessary glue to bridge the gap between OpenTelemetry, 
 
 The lib is configurable via environment variables as following:
 
-| env var                | default value                               | description                                               |
-|------------------------|---------------------------------------------|-----------------------------------------------------------|
-| DD_ENABLED             | false                                       | Enables the datadog exporter and trace_id/span_id on logs |
-| DD_SERVICE             | <required>                                  | Datadog service name                                      |
-| DD_AGENT_HOST          | localhost                                   | Datadog agent host                                        |
-| DD_AGENT_PORT          | 8126                                        | Datadog agent port                                        |
-| RUST_LOG               | info                                        |                                                           |
-| AXUM_TRACING_LOG_LEVEL | if DD_ENABLED=true, "info", otherwise "off" |                                                           |
-| OTEL_LOG_LEVEL         | debug                                       |                                                           |
+| env var                | default value                                | description                                               |
+|------------------------|----------------------------------------------|-----------------------------------------------------------|
+| DD_ENABLED             | false                                        | Enables the datadog exporter and trace_id/span_id on logs |
+| DD_SERVICE             | <required>                                   | Datadog service name                                      |
+| DD_AGENT_HOST          | localhost                                    | Datadog agent host                                        |
+| DD_AGENT_PORT          | 8126                                         | Datadog agent port                                        |
+| RUST_LOG               | info                                         |                                                           |
+| AXUM_TRACING_LOG_LEVEL | if DD_ENABLED=true, "trace", otherwise "off" |                                                           |
+| OTEL_LOG_LEVEL         | debug                                        |                                                           |
 
 
 # Examples

@@ -8,9 +8,9 @@ use std::env;
 use std::sync::Arc;
 use opentelemetry::sdk::trace::{RandomIdGenerator, Sampler, Tracer};
 use opentelemetry::sdk::trace;
-pub use opentelemetry::trace::{TraceError, TraceResult};
 use opentelemetry::global;
 use std::time::Duration;
+use opentelemetry::trace::{TraceError, TraceResult};
 use opentelemetry_datadog::{ApiVersion, DatadogPropagator};
 use tracing::Subscriber;
 use tracing_opentelemetry::{OpenTelemetryLayer, PreSampledTracer};
@@ -35,7 +35,7 @@ pub fn build_tracer() -> TraceResult<Tracer> {
     let tracer = opentelemetry_datadog::new_pipeline()
         .with_http_client::<reqwest::Client>(Arc::new(dd_http_client))
         .with_service_name(service_name)
-        .with_version(ApiVersion::Version05)
+        .with_api_version(ApiVersion::Version05)
         .with_agent_endpoint(format!("http://{dd_host}:{dd_port}"))
         .with_trace_config(
             trace::config()

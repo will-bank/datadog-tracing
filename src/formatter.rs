@@ -12,7 +12,7 @@ use chrono::Utc;
 use opentelemetry::trace::{SpanId, TraceContextExt, TraceId};
 use serde::ser::{SerializeMap, Serializer as _};
 use serde::Serialize;
-use tracing::{Event, Subscriber};
+use tracing::{Event, Instrument, Subscriber};
 use tracing_opentelemetry::OtelData;
 
 use tracing_serde::AsSerde;
@@ -45,9 +45,15 @@ fn lookup_trace_info<S>(span_ref: &SpanRef<S>) -> Option<TraceInfo>
     where
         S: Subscriber + for<'a> LookupSpan<'a>,
 {
-    span_ref.extensions().get::<OtelData>().map(|o| TraceInfo {
-        trace_id: o.parent_cx.span().span_context().trace_id().into(),
-        span_id: o.builder.span_id.unwrap_or(SpanId::INVALID).into(),
+    span_ref.extensions().get::<OtelData>().map(|o| {
+        let trace_id = match o.parent_cx.has_active_span() {
+            true => o.parent_cx.span().span_context().trace_id(),
+            false => o.builder.trace_id.unwrap_or(TraceId::INVALID),
+        };
+        TraceInfo {
+            trace_id: trace_id.into(),
+            span_id: o.builder.span_id.unwrap_or(SpanId::INVALID).into(),
+        }
     })
 }
 

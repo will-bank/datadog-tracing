@@ -1,4 +1,5 @@
 use std::env;
+use opentelemetry::trace::TraceError;
 use tracing::Subscriber;
 use tracing_subscriber::registry::LookupSpan;
 use tracing_subscriber::{EnvFilter, Layer, Registry};
@@ -7,20 +8,20 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use crate::formatter::DatadogFormatter;
 use crate::shutdown::TracerShutdown;
-use crate::tracer::{build_tracer, TraceError};
+use crate::tracer::build_tracer;
 
 fn loglevel_filter_layer(dd_enabled: bool) -> EnvFilter {
     let log_level = env::var("RUST_LOG").unwrap_or_else(|_| "info".to_string());
 
     // `axum_tracing_opentelemetry` should be a level info to emit opentelemetry trace & span
-    let axum_tracing_log_level = env::var("AXUM_TRACING_LOG_LEVEL").unwrap_or_else(|_| if dd_enabled { "info".to_string() } else { "off".to_string() });
+    let axum_tracing_log_level = env::var("AXUM_TRACING_LOG_LEVEL").unwrap_or_else(|_| if dd_enabled { "trace".to_string() } else { "off".to_string() });
 
     // `otel::setup` set to debug to log detected resources, configuration read and infered
     let otel_log_level = env::var("OTEL_LOG_LEVEL").unwrap_or_else(|_| "debug".to_string());
 
     env::set_var(
         "RUST_LOG",
-        format!("{log_level},axum_tracing_opentelemetry={axum_tracing_log_level},otel={otel_log_level}"),
+        format!("{log_level},otel::tracing={axum_tracing_log_level},otel={otel_log_level}"),
     );
 
     EnvFilter::from_default_env()
