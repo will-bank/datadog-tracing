@@ -2,8 +2,6 @@
 name = "datadog-tracing"
 version = "0.0.1"
 authors = [
-    "David Steiner <david_j_steiner@yahoo.co.nz",
-    "Fergus Strangways-Dixon <fergusdixon101@gmail.com>",
     "Fernando Goncalves <fernando.hsgoncalves@gmail.com>",
     "Alefh Sousa <alefh.sousa@gmail.com>"
 ]

@@ -4,7 +4,7 @@
 
 Non-official datadog tracing and log correlation for Rust services.
 
-This crate contains the necessary glue to bridge the gap between OpenTelemetry and Datadog.
+This crate contains the necessary glue to bridge the gap between OpenTelemetry, tracing and Datadog.
 
 # Features
 
@@ -41,9 +41,9 @@ The lib is configurable via environment variables as following:
 
 ## Inspiration
 
-This lib was highly inspired on [datadog-tracing](https://github.com/will-bank/datadog-tracing),
-which is also a glue between tracing + opentelemtry + datadog.
-The main difference is that it exportes using the opentelemetry_otlp exporter, and this one uses opentelemetry_datadog,
+This lib was highly inspired on [ddtrace](https://github.com/Validus-Risk-Management/ddtrace) crate,
+which is also a glue between tracing + opentelemetry + datadog.
+The **main difference** is that it exportes using the `opentelemetry_otlp` exporter, and this one uses `opentelemetry_datadog`,
 so there is no need to configure your datadog agent to receive traces via OTLP and the default datadog APM works as expected! 
 
 
@@ -77,11 +77,11 @@ use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_tracing::TracingMiddleware;
 
 #[tokio::main]
-async fn main() {
-    set_global_propagator();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let (_guard, tracer_shutdown) = datadog_tracing::init()?;
     client = get_http_client();
     
-    // configure tracing, setup your app and inject the client
+    // setup your app and inject the client
 }
 
 fn get_http_client() -> ClientWithMiddleware {
