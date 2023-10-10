@@ -9,7 +9,7 @@
 use std::io;
 
 use chrono::Utc;
-use opentelemetry::trace::{SpanId, TraceContextExt, TraceId};
+use opentelemetry::trace::{SpanId, TraceId};
 use serde::ser::{SerializeMap, Serializer as _};
 use serde::Serialize;
 use tracing::{Event, Subscriber};
