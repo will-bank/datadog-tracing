@@ -9,7 +9,7 @@ use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler, Tracer};
 use opentelemetry_sdk::trace;
 use opentelemetry::global;
 use std::time::Duration;
-use opentelemetry::trace::{TraceError, TraceResult};
+pub use opentelemetry::trace::{TraceError, TraceId, TraceResult};
 use opentelemetry_datadog::{ApiVersion, DatadogPropagator};
 use tracing::Subscriber;
 use tracing_opentelemetry::{OpenTelemetryLayer, PreSampledTracer};
