@@ -6,7 +6,6 @@
 //! [`axum-tracing-opentelemetry`]: https://github.com/davidB/axum-tracing-opentelemetry
 
 pub use axum_tracing_opentelemetry::opentelemetry_tracing_layer;
-pub use axum_tracing_opentelemetry::opentelemetry_tracing_layer_grpc;
 use crate::shutdown::TracerShutdown;
 use tokio::signal;
 
