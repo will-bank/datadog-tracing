@@ -1,6 +1,6 @@
 [package]
 name = "datadog-tracing"
-version = "0.2.0"
+version = "0.2.1"
 authors = [
     "Fernando Goncalves <fernando.hsgoncalves@gmail.com>",
     "Alefh Sousa <alefh.sousa@gmail.com>"

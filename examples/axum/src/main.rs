@@ -1,8 +1,12 @@
 use std::net::SocketAddr;
 use std::time::Duration;
+use datadog_tracing::axum::{OtelAxumLayer, OtelInResponseLayer};
 
 use axum::{routing::get, Router};
-use datadog_tracing::axum::opentelemetry_tracing_layer;
+use tower_http::timeout::TimeoutLayer;
+use tokio::net::TcpListener;
+use tracing::info;
+use datadog_tracing::axum::shutdown_signal;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -10,16 +14,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .route("/", get(root))
-        .layer(opentelemetry_tracing_layer())
+        // include trace context as header into the response
+        .layer(OtelInResponseLayer)
+        //start OpenTelemetry trace on incoming request
+        .layer((
+            OtelAxumLayer::default(),
+            // Graceful shutdown will wait for outstanding requests to complete. Add a timeout so
+            // requests don't hang forever.
+            TimeoutLayer::new(Duration::from_secs(90)),
+        ))
         .route("/health", get(health));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3025));
-    tracing::info!("listening on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .with_graceful_shutdown(datadog_tracing::axum::shutdown_signal(tracer_shutdown))
-        .await
-        .unwrap();
+    let listener = TcpListener::bind(addr).await?;
+
+    info!("listening on {}", addr);
+    axum::serve(listener, app.into_make_service())
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
+
+    tracer_shutdown.shutdown();
 
     Ok(())
 }

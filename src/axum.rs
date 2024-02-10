@@ -7,10 +7,9 @@
 
 
 pub use axum_tracing_opentelemetry::middleware::*;
-use crate::shutdown::TracerShutdown;
 use tokio::signal;
 
-pub async fn shutdown_signal(tracer_shutdown: TracerShutdown) {
+pub async fn shutdown_signal() {
     let ctrl_c = async {
         signal::ctrl_c()
             .await
@@ -30,6 +29,4 @@ pub async fn shutdown_signal(tracer_shutdown: TracerShutdown) {
     }
 
     println!("signal received, starting graceful shutdown");
-
-    tracer_shutdown.shutdown();
 }
