@@ -11,7 +11,6 @@
 
 #[cfg(feature = "axum")]
 pub mod axum;
-pub mod formatter;
 pub mod tracer;
 pub mod init;
 pub mod shutdown;

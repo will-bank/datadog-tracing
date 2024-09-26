@@ -1,12 +1,15 @@
 use std::env;
+
 use opentelemetry::trace::TraceError;
 use tracing::Subscriber;
-use tracing_subscriber::registry::LookupSpan;
-use tracing_subscriber::{EnvFilter, Layer, Registry};
 use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
+use tracing_subscriber::{EnvFilter, Layer, Registry};
+use tracing_subscriber::{EnvFilter, Layer, Registry};
 use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::registry::LookupSpan;
+use tracing_subscriber::registry::LookupSpan;
 use tracing_subscriber::util::SubscriberInitExt;
-use crate::formatter::DatadogFormatter;
+
 use crate::shutdown::TracerShutdown;
 use crate::tracer::build_tracer;
 
@@ -35,7 +38,6 @@ fn log_layer<S>(dd_enabled: bool, non_blocking: NonBlocking) -> Box<dyn Layer<S>
         Box::new(
             tracing_subscriber::fmt::layer()
                 .json()
-                .event_format(DatadogFormatter)
                 .with_writer(non_blocking),
         )
     } else {
@@ -50,11 +52,12 @@ pub fn init() -> Result<(WorkerGuard, TracerShutdown), TraceError> {
     let dd_enabled = env::var("DD_ENABLED").map(|s| s == "true").unwrap_or(false);
 
     let tracer = if dd_enabled {
-        Some(build_tracer()?)
+        Some(build_tracer())
     } else {
         None
     };
-    let telemetry_layer = tracer.map(|tracer| tracing_opentelemetry::layer().with_tracer(tracer));
+
+    let telemetry_layer = tracing_opentelemetry::layer().with_tracer(tracer);
 
     Registry::default()
         .with(loglevel_filter_layer(dd_enabled))
