@@ -5,17 +5,17 @@
 //!
 //! It also contains a convenience function to build a layer with the tracer.
 use std::env;
-use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler, Tracer};
-use opentelemetry_sdk::trace;
-use opentelemetry::global;
 use std::time::Duration;
+use opentelemetry::global;
+
 pub use opentelemetry::trace::{TraceError, TraceId, TraceResult};
 use opentelemetry_datadog::{ApiVersion, DatadogPropagator};
+use opentelemetry_sdk::trace::{Config, RandomIdGenerator, Sampler, Tracer};
 use tracing::Subscriber;
 use tracing_opentelemetry::{OpenTelemetryLayer, PreSampledTracer};
 use tracing_subscriber::registry::LookupSpan;
 
-pub fn build_tracer() -> TraceResult<Tracer> {
+pub fn build_tracer() -> Result<Tracer, TraceError> {
     let service_name = env::var("DD_SERVICE")
         .map_err(|_| <&str as Into<TraceError>>::into("missing DD_SERVICE"))?;
 
@@ -37,13 +37,11 @@ pub fn build_tracer() -> TraceResult<Tracer> {
         .with_api_version(ApiVersion::Version05)
         .with_agent_endpoint(format!("http://{dd_host}:{dd_port}"))
         .with_trace_config(
-            trace::config()
-                .with_sampler(Sampler::AlwaysOn)
-                .with_id_generator(RandomIdGenerator::default()),
+            Config::default().with_sampler(Sampler::AlwaysOn).with_id_generator(RandomIdGenerator::default()),
         )
         .install_batch(opentelemetry_sdk::runtime::Tokio);
 
-    global::set_text_map_propagator(DatadogPropagator::default());
+    global::set_text_map_propagator(DatadogPropagator::new());
 
     tracer
 }
