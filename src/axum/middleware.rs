@@ -46,6 +46,8 @@ use tracing::field::Empty;
 use tracing::Span;
 use tracing_opentelemetry_instrumentation_sdk::http as otel_http;
 
+use crate::axum::http_server;
+
 #[deprecated(
     since = "0.12.0",
     note = "keep for transition, replaced by OtelAxumLayer"
@@ -116,8 +118,7 @@ where
         use tracing_opentelemetry::OpenTelemetrySpanExt;
         let req = req;
         let span = if self.filter.map_or(true, |f| f(req.uri().path())) {
-            let span = otel_http::http_server::make_span_from_request(&req);
-            span.record("http.status_code", Empty); // add datadog status_code attribute
+            let span = http_server::make_span_from_request(&req);
 
             let route = http_route(&req);
             let method = otel_http::http_method(req.method());
@@ -164,12 +165,7 @@ where
         let this = self.project();
         let _guard = this.span.enter();
         let result = futures_util::ready!(this.inner.poll(cx));
-        otel_http::http_server::update_span_from_response_or_error(this.span, &result);
-
-        if let Ok(response) = &result {
-            this.span
-                .record("http.status_code", response.status().as_u16());
-        }
+        http_server::update_span_from_response_or_error(this.span, &result);
 
         Poll::Ready(result)
     }

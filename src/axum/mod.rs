@@ -15,3 +15,5 @@ mod middleware;
 pub use middleware::*;
 
 pub use axum_tracing_opentelemetry::middleware::OtelInResponseLayer;
+
+mod http_server;
