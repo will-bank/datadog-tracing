@@ -12,9 +12,9 @@
 #[cfg(feature = "axum")]
 pub mod axum;
 pub mod formatter;
-pub mod tracer;
 pub mod init;
 pub mod shutdown;
+pub mod tracer;
 
 pub use init::init;
 pub use opentelemetry::global::shutdown_tracer_provider;
