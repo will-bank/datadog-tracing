@@ -4,13 +4,13 @@
 //! to send traces to the Datadog agent in batches over gRPC.
 //!
 //! It also contains a convenience function to build a layer with the tracer.
-use std::env;
-use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler, Tracer};
-use opentelemetry_sdk::trace;
 use opentelemetry::global;
-use std::time::Duration;
 pub use opentelemetry::trace::{TraceError, TraceId, TraceResult};
 use opentelemetry_datadog::{ApiVersion, DatadogPropagator};
+use opentelemetry_sdk::trace;
+use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler, Tracer};
+use std::env;
+use std::time::Duration;
 use tracing::Subscriber;
 use tracing_opentelemetry::{OpenTelemetryLayer, PreSampledTracer};
 use tracing_subscriber::registry::LookupSpan;
@@ -19,9 +19,9 @@ pub fn build_tracer() -> TraceResult<Tracer> {
     let service_name = env::var("DD_SERVICE")
         .map_err(|_| <&str as Into<TraceError>>::into("missing DD_SERVICE"))?;
 
-
     let dd_host = env::var("DD_AGENT_HOST").unwrap_or("localhost".to_string());
-    let dd_port = env::var("DD_AGENT_PORT").ok()
+    let dd_port = env::var("DD_AGENT_PORT")
+        .ok()
         .and_then(|it| it.parse::<i32>().ok())
         .unwrap_or(8126);
 

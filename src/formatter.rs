@@ -42,8 +42,8 @@ impl From<SpanId> for DatadogId {
 }
 
 fn lookup_trace_info<S>(span_ref: &SpanRef<S>) -> Option<TraceInfo>
-    where
-        S: Subscriber + for<'a> LookupSpan<'a>,
+where
+    S: Subscriber + for<'a> LookupSpan<'a>,
 {
     span_ref.extensions().get::<OtelData>().map(|o| {
         let trace_id = if o.parent_cx.has_active_span() {
@@ -62,9 +62,9 @@ fn lookup_trace_info<S>(span_ref: &SpanRef<S>) -> Option<TraceInfo>
 pub struct DatadogFormatter;
 
 impl<S, N> FormatEvent<S, N> for DatadogFormatter
-    where
-        S: Subscriber + for<'lookup> LookupSpan<'lookup>,
-        N: for<'writer> FormatFields<'writer> + 'static,
+where
+    S: Subscriber + for<'lookup> LookupSpan<'lookup>,
+    N: for<'writer> FormatFields<'writer> + 'static,
 {
     fn format_event(
         &self,
@@ -72,8 +72,8 @@ impl<S, N> FormatEvent<S, N> for DatadogFormatter
         mut writer: Writer<'_>,
         event: &Event<'_>,
     ) -> std::fmt::Result
-        where
-            S: Subscriber + for<'a> LookupSpan<'a>,
+    where
+        S: Subscriber + for<'a> LookupSpan<'a>,
     {
         let meta = event.metadata();
 

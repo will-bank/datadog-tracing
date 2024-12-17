@@ -42,7 +42,6 @@ use std::{
     task::{Context, Poll},
 };
 use tower::{Layer, Service};
-use tracing::field::Empty;
 use tracing::Span;
 use tracing_opentelemetry_instrumentation_sdk::http as otel_http;
 
