@@ -37,7 +37,7 @@ pub fn build_tracer() -> TraceResult<Tracer> {
         .with_api_version(ApiVersion::Version05)
         .with_agent_endpoint(format!("http://{dd_host}:{dd_port}"))
         .with_trace_config(
-            trace::config()
+            trace::Config::default()
                 .with_sampler(Sampler::AlwaysOn)
                 .with_id_generator(RandomIdGenerator::default()),
         )
