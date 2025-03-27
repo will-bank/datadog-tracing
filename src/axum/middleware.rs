@@ -172,7 +172,10 @@ where
 
 #[inline]
 fn http_route<B>(req: &Request<B>) -> &str {
-    req.extensions()
-        .get::<MatchedPath>()
-        .map_or_else(|| "", |mp| mp.as_str())
+    match req.extensions()
+        .get::<MatchedPath>() {
+        Some(matched_path) => matched_path.as_str(),
+        None => req.uri().path(),
+    }
+        
 }
