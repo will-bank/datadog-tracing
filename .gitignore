@@ -1,3 +1,11 @@
-target/
+# Compiled files
+/target/
 Cargo.lock
+
+# IDE-specific files
 .idea/
+*.iml
+.vscode/
+
+# OS specific files
+.DS_Store
