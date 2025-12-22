@@ -4,10 +4,10 @@
 use std::error::Error;
 
 use tracing::field::Empty;
+use tracing_opentelemetry_instrumentation_sdk::TRACING_TARGET;
 use tracing_opentelemetry_instrumentation_sdk::http::{
     http_flavor, http_host, http_method, url_scheme, user_agent,
 };
-use tracing_opentelemetry_instrumentation_sdk::TRACING_TARGET;
 
 pub fn make_span_from_request<B>(req: &http::Request<B>) -> tracing::Span {
     // [opentelemetry-specification/.../http.md](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md)

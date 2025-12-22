@@ -10,8 +10,8 @@ use std::io;
 
 use chrono::Utc;
 use opentelemetry::trace::{SpanId, TraceContextExt, TraceId};
-use serde::ser::{SerializeMap, Serializer as _};
 use serde::Serialize;
+use serde::ser::{SerializeMap, Serializer as _};
 use tracing::{Event, Subscriber};
 use tracing_opentelemetry::OtelData;
 

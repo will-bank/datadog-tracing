@@ -5,17 +5,18 @@
 //!
 //! It also contains a convenience function to build a layer with the tracer.
 use opentelemetry::global;
-pub use opentelemetry::trace::{TraceError, TraceId, TraceResult};
+pub use opentelemetry::trace::TraceId;
+use opentelemetry::trace::TracerProvider;
 use opentelemetry_datadog::{ApiVersion, DatadogPropagator};
-use opentelemetry_sdk::trace;
+use opentelemetry_sdk::trace::{Config, SdkTracerProvider, TraceError, TraceResult};
 use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler, Tracer};
 use std::env;
 use std::time::Duration;
 use tracing::Subscriber;
-use tracing_opentelemetry::{OpenTelemetryLayer, PreSampledTracer};
+use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::registry::LookupSpan;
 
-pub fn build_tracer() -> TraceResult<Tracer> {
+pub fn build_tracer_provider() -> TraceResult<SdkTracerProvider> {
     let service_name = env::var("DD_SERVICE")
         .map_err(|_| <&str as Into<TraceError>>::into("missing DD_SERVICE"))?;
 
@@ -31,28 +32,28 @@ pub fn build_tracer() -> TraceResult<Tracer> {
         .build()
         .expect("Could not init datadog http_client");
 
-    let tracer = opentelemetry_datadog::new_pipeline()
+    let mut trace_config = Config::default();
+    trace_config.sampler = Box::new(Sampler::AlwaysOn);
+    trace_config.id_generator = Box::new(RandomIdGenerator::default());
+
+    let tracer_provider = opentelemetry_datadog::new_pipeline()
         .with_http_client(dd_http_client)
         .with_service_name(service_name)
         .with_api_version(ApiVersion::Version05)
         .with_agent_endpoint(format!("http://{dd_host}:{dd_port}"))
-        .with_trace_config(
-            trace::Config::default()
-                .with_sampler(Sampler::AlwaysOn)
-                .with_id_generator(RandomIdGenerator::default()),
-        )
-        .install_batch(opentelemetry_sdk::runtime::Tokio);
+        .with_trace_config(trace_config)
+        .install_batch();
 
     global::set_text_map_propagator(DatadogPropagator::default());
 
-    tracer
+    tracer_provider
 }
 
-pub fn build_layer<S>() -> TraceResult<OpenTelemetryLayer<S, Tracer>>
-where
-    Tracer: opentelemetry::trace::Tracer + PreSampledTracer + 'static,
-    S: Subscriber + for<'span> LookupSpan<'span>,
-{
-    let tracer = build_tracer()?;
-    Ok(tracing_opentelemetry::layer().with_tracer(tracer))
-}
+// pub fn build_layer<S>() -> TraceResult<OpenTelemetryLayer<S, Tracer>>
+// where
+//     Tracer: opentelemetry::trace::Tracer + 'static,
+//     S: Subscriber + for<'span> LookupSpan<'span>,
+// {
+//     let tracer = build_tracer()?;
+//     Ok(tracing_opentelemetry::layer().with_tracer(tracer.tracer("DataDogTelemetry")))
+// }

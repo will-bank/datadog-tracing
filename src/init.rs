@@ -1,7 +1,8 @@
 use crate::formatter::DatadogFormatter;
 use crate::shutdown::TracerShutdown;
-use crate::tracer::build_tracer;
-use opentelemetry::trace::TraceError;
+use crate::tracer::build_tracer_provider;
+use opentelemetry::trace::TracerProvider;
+use opentelemetry_sdk::trace::TraceError;
 use std::env;
 use tracing::Subscriber;
 use tracing_appender::non_blocking::{NonBlocking, WorkerGuard};
@@ -25,10 +26,12 @@ fn loglevel_filter_layer(dd_enabled: bool) -> EnvFilter {
     // `otel::setup` set to debug to log detected resources, configuration read and infered
     let otel_log_level = env::var("OTEL_LOG_LEVEL").unwrap_or_else(|_| "debug".to_string());
 
-    env::set_var(
-        "RUST_LOG",
-        format!("{log_level},otel::tracing={axum_tracing_log_level},otel={otel_log_level}"),
-    );
+    unsafe {
+        env::set_var(
+            "RUST_LOG",
+            format!("{log_level},otel::tracing={axum_tracing_log_level},otel={otel_log_level}"),
+        );
+    }
 
     EnvFilter::from_default_env()
 }
@@ -57,18 +60,35 @@ pub fn init() -> Result<(WorkerGuard, TracerShutdown), TraceError> {
 
     let dd_enabled = env::var("DD_ENABLED").map(|s| s == "true").unwrap_or(false);
 
-    let tracer = if dd_enabled {
-        Some(build_tracer()?)
+    if dd_enabled {
+        let provider = build_tracer_provider()?;
+
+        let telemetry_layer =
+            tracing_opentelemetry::layer().with_tracer(provider.tracer("DataDogTelemetry"));
+
+        Registry::default()
+            .with(loglevel_filter_layer(dd_enabled))
+            .with(log_layer(dd_enabled, non_blocking))
+            .with(telemetry_layer)
+            .init();
+
+        Ok((
+            guard,
+            TracerShutdown {
+                tracer_provider: Some(provider),
+            },
+        ))
     } else {
-        None
-    };
-    let telemetry_layer = tracer.map(|tracer| tracing_opentelemetry::layer().with_tracer(tracer));
+        Registry::default()
+            .with(loglevel_filter_layer(dd_enabled))
+            .with(log_layer(dd_enabled, non_blocking))
+            .init();
 
-    Registry::default()
-        .with(loglevel_filter_layer(dd_enabled))
-        .with(log_layer(dd_enabled, non_blocking))
-        .with(telemetry_layer)
-        .init();
-
-    Ok((guard, TracerShutdown {}))
+        Ok((
+            guard,
+            TracerShutdown {
+                tracer_provider: None,
+            },
+        ))
+    }
 }
