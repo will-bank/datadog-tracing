@@ -39,7 +39,6 @@ chrono = "^0.4.33"
 opentelemetry = { version = "^0.31.0" }
 opentelemetry_sdk = { version = "^0.31.0", features = ["rt-tokio"] }
 opentelemetry-http = { version = "^0.31.0" }
-# opentelemetry-otlp = { version = "0.31.0", features = ["http", "metrics", "trace"] }
 opentelemetry-datadog = { version = "0.19.0", features = ["reqwest-client"] }
 reqwest = { version = "0.12", default-features = false }
 serde = { version = "1", features = ["derive"] }

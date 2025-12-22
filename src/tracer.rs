@@ -44,12 +44,3 @@ pub fn build_tracer_provider() -> TraceResult<SdkTracerProvider> {
 
     tracer_provider
 }
-
-// pub fn build_layer<S>() -> TraceResult<OpenTelemetryLayer<S, Tracer>>
-// where
-//     Tracer: opentelemetry::trace::Tracer + 'static,
-//     S: Subscriber + for<'span> LookupSpan<'span>,
-// {
-//     let tracer = build_tracer()?;
-//     Ok(tracing_opentelemetry::layer().with_tracer(tracer.tracer("DataDogTelemetry")))
-// }
