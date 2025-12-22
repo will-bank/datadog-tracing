@@ -120,7 +120,7 @@ where
             let span = http_server::make_span_from_request(&req);
 
             let route = http_route(&req);
-            let method = otel_http::http_method(req.method());
+            let method = req.method();
 
             span.record("http.route", route);
             span.record("otel.name", format!("{method} {route}").trim());
