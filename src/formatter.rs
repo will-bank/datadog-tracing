@@ -9,9 +9,9 @@
 use std::io;
 
 use chrono::Utc;
-use opentelemetry::trace::{SpanId, TraceContextExt, TraceId};
-use serde::ser::{SerializeMap, Serializer as _};
+use opentelemetry::trace::{SpanId, TraceId};
 use serde::Serialize;
+use serde::ser::{SerializeMap, Serializer as _};
 use tracing::{Event, Subscriber};
 use tracing_opentelemetry::OtelData;
 
@@ -45,16 +45,9 @@ fn lookup_trace_info<S>(span_ref: &SpanRef<S>) -> Option<TraceInfo>
 where
     S: Subscriber + for<'a> LookupSpan<'a>,
 {
-    span_ref.extensions().get::<OtelData>().map(|o| {
-        let trace_id = if o.parent_cx.has_active_span() {
-            o.parent_cx.span().span_context().trace_id()
-        } else {
-            o.builder.trace_id.unwrap_or(TraceId::INVALID)
-        };
-        TraceInfo {
-            trace_id: trace_id.into(),
-            span_id: o.builder.span_id.unwrap_or(SpanId::INVALID).into(),
-        }
+    span_ref.extensions().get::<OtelData>().map(|o| TraceInfo {
+        trace_id: o.trace_id().unwrap_or(TraceId::INVALID).into(),
+        span_id: o.span_id().unwrap_or(SpanId::INVALID).into(),
     })
 }
 
@@ -89,11 +82,11 @@ where
             event.record(&mut visitor);
             serializer = visitor.take_serializer()?;
 
-            if let Some(ref span_ref) = ctx.lookup_current() {
-                if let Some(trace_info) = lookup_trace_info(span_ref) {
-                    serializer.serialize_entry("dd.span_id", &trace_info.span_id)?;
-                    serializer.serialize_entry("dd.trace_id", &trace_info.trace_id)?;
-                }
+            if let Some(ref span_ref) = ctx.lookup_current()
+                && let Some(trace_info) = lookup_trace_info(span_ref)
+            {
+                serializer.serialize_entry("dd.span_id", &trace_info.span_id)?;
+                serializer.serialize_entry("dd.trace_id", &trace_info.trace_id)?;
             }
 
             serializer.end()
@@ -119,11 +112,9 @@ impl<'a> io::Write for WriteAdaptor<'a> {
         let s =
             std::str::from_utf8(buf).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
-        self.fmt_write
-            .write_str(s)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+        self.fmt_write.write_str(s).map_err(io::Error::other)?;
 
-        Ok(s.as_bytes().len())
+        Ok(s.len())
     }
 
     fn flush(&mut self) -> io::Result<()> {

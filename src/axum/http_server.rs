@@ -4,16 +4,17 @@
 use std::error::Error;
 
 use tracing::field::Empty;
-use tracing_opentelemetry_instrumentation_sdk::http::{
-    http_flavor, http_host, http_method, url_scheme, user_agent,
-};
 use tracing_opentelemetry_instrumentation_sdk::TRACING_TARGET;
+use tracing_opentelemetry_instrumentation_sdk::http::{
+    http_flavor, http_host, url_scheme, user_agent,
+};
 
 pub fn make_span_from_request<B>(req: &http::Request<B>) -> tracing::Span {
     // [opentelemetry-specification/.../http.md](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md)
     // [opentelemetry-specification/.../span-general.md](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/span-general.md)
     // Can not use const or opentelemetry_semantic_conventions::trace::* for name of records
-    let http_method = http_method(req.method());
+    let http_method = req.method();
+
     tracing::trace_span!(
         target: TRACING_TARGET,
         "HTTP request",
