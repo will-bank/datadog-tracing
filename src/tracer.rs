@@ -6,15 +6,11 @@
 //! It also contains a convenience function to build a layer with the tracer.
 use opentelemetry::global;
 pub use opentelemetry::trace::TraceId;
-use opentelemetry::trace::TracerProvider;
 use opentelemetry_datadog::{ApiVersion, DatadogPropagator};
 use opentelemetry_sdk::trace::{Config, SdkTracerProvider, TraceError, TraceResult};
-use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler, Tracer};
+use opentelemetry_sdk::trace::{RandomIdGenerator, Sampler};
 use std::env;
 use std::time::Duration;
-use tracing::Subscriber;
-use tracing_opentelemetry::OpenTelemetryLayer;
-use tracing_subscriber::registry::LookupSpan;
 
 pub fn build_tracer_provider() -> TraceResult<SdkTracerProvider> {
     let service_name = env::var("DD_SERVICE")
