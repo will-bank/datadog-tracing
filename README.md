@@ -2,6 +2,10 @@
 [![docs-badge]](https://docs.rs/datadog-tracing)
 [![Crates.io](https://img.shields.io/crates/l/datadog-tracing)](LICENSE)
 
+> **⚠️ Project No Longer Maintained**
+> 
+> This project is no longer maintained since Will Bank was liquidated by Brazil Central Bank. Feel free to fork the project and continue development.
+
 Non-official datadog tracing and log correlation for Rust services.
 
 This crate contains the necessary glue to bridge the gap between OpenTelemetry, tracing and Datadog.
