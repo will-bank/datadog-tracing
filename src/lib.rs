@@ -19,4 +19,4 @@ pub mod shutdown;
 #[cfg(feature = "datadog")]
 pub mod tracer;
 
-pub use init::init;
+pub use init::{init, init_with_target, OutputTarget};

@@ -1,10 +1,17 @@
 use std::env;
+use std::io;
 #[cfg(feature = "datadog")]
 use tracing_appender::non_blocking::NonBlocking;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Registry};
+
+/// Where to write log output.
+pub enum OutputTarget {
+    Stdout,
+    Stderr,
+}
 
 #[cfg(feature = "datadog")]
 use crate::formatter::DatadogFormatter;
@@ -81,9 +88,21 @@ where
 ///
 /// Without the `datadog` feature, sets up a plain human-readable fmt subscriber
 /// with `RUST_LOG` env filter.
+/// Initialize tracing with logs written to stdout (default, backwards compatible).
 #[cfg(feature = "datadog")]
 pub fn init() -> Result<(WorkerGuard, TracerShutdown), TraceError> {
-    let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
+    init_with_target(OutputTarget::Stdout)
+}
+
+/// Initialize tracing with logs written to the specified output target.
+#[cfg(feature = "datadog")]
+pub fn init_with_target(
+    target: OutputTarget,
+) -> Result<(WorkerGuard, TracerShutdown), TraceError> {
+    let (non_blocking, guard) = match target {
+        OutputTarget::Stdout => tracing_appender::non_blocking(io::stdout()),
+        OutputTarget::Stderr => tracing_appender::non_blocking(io::stderr()),
+    };
     let dd_enabled = env::var("DD_ENABLED").map(|s| s == "true").unwrap_or(false);
 
     if dd_enabled {
@@ -115,9 +134,19 @@ pub fn init() -> Result<(WorkerGuard, TracerShutdown), TraceError> {
     }
 }
 
+/// Initialize tracing with logs written to stdout (default, backwards compatible).
 #[cfg(not(feature = "datadog"))]
 pub fn init() -> Result<WorkerGuard, Box<dyn std::error::Error>> {
-    let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stderr());
+    init_with_target(OutputTarget::Stdout)
+}
+
+/// Initialize tracing with logs written to the specified output target.
+#[cfg(not(feature = "datadog"))]
+pub fn init_with_target(target: OutputTarget) -> Result<WorkerGuard, Box<dyn std::error::Error>> {
+    let (non_blocking, guard) = match target {
+        OutputTarget::Stdout => tracing_appender::non_blocking(io::stdout()),
+        OutputTarget::Stderr => tracing_appender::non_blocking(io::stderr()),
+    };
     Registry::default()
         .with(loglevel_filter_layer(false))
         .with(tracing_subscriber::fmt::layer().with_writer(non_blocking))
