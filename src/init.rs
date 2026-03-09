@@ -117,7 +117,7 @@ pub fn init() -> Result<(WorkerGuard, TracerShutdown), TraceError> {
 
 #[cfg(not(feature = "datadog"))]
 pub fn init() -> Result<WorkerGuard, Box<dyn std::error::Error>> {
-    let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
+    let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stderr());
     Registry::default()
         .with(loglevel_filter_layer(false))
         .with(tracing_subscriber::fmt::layer().with_writer(non_blocking))
