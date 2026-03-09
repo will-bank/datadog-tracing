@@ -116,16 +116,16 @@ where
     fn call(&mut self, req: Request<B>) -> Self::Future {
         use tracing_opentelemetry::OpenTelemetrySpanExt;
         let req = req;
-        let span = if self.filter.map_or(true, |f| f(req.uri().path())) {
+        let span = if self.filter.is_none_or(|f| f(req.uri().path())) {
             let span = http_server::make_span_from_request(&req);
 
             let route = http_route(&req);
-            let method = otel_http::http_method(req.method());
+            let method = req.method();
 
             span.record("http.route", route);
             span.record("otel.name", format!("{method} {route}").trim());
 
-            span.set_parent(otel_http::extract_context(req.headers()));
+            _ = span.set_parent(otel_http::extract_context(req.headers()));
             span
         } else {
             tracing::Span::none()

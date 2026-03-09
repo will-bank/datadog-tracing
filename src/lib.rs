@@ -11,10 +11,12 @@
 
 #[cfg(feature = "axum")]
 pub mod axum;
+#[cfg(feature = "datadog")]
 pub mod formatter;
 pub mod init;
+#[cfg(feature = "datadog")]
 pub mod shutdown;
+#[cfg(feature = "datadog")]
 pub mod tracer;
 
-pub use init::init;
-pub use opentelemetry::global::shutdown_tracer_provider;
+pub use init::{init, init_with_target, OutputTarget};
